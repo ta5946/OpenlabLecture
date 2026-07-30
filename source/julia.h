@@ -7,9 +7,13 @@
 namespace gil = boost::gil;
 #endif
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <vector>
 #include <tuple>
 
 std::tuple<int, int, int> colormapPPM(int c)
@@ -76,8 +80,23 @@ void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * f
   std::cout << "Wrote " << filename << "\n";
 }
 #else
-void writePNG(unsigned char const * /*pixels*/, size_t /*nx*/, size_t /*ny*/, const char * /*filename*/) {
-  std::cerr << "writePNG requires boost::gil and libpng\n";
+void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * filename) {
+  std::vector<std::byte> stb_buffer(nx*ny*3);
+
+  for (size_t j = 0; j < ny; ++j) {
+    for (size_t i = 0; i < nx; ++i) {
+      unsigned char col = pixels[i + (ny-j-1)*nx];
+      auto [r, g, b] = colormapPPM(col);
+
+      stb_buffer[3*(i + j*nx)] = static_cast<std::byte>(static_cast<unsigned char>(r));
+      stb_buffer[3*(i + j*nx)+1] = static_cast<std::byte>(static_cast<unsigned char>(g));
+      stb_buffer[3*(i + j*nx)+2] = static_cast<std::byte>(static_cast<unsigned char>(b));
+    }
+  }
+
+  stbi_write_png(filename, nx, ny, 3, stb_buffer.data(), 3*nx);
+
+  std::cout << "Wrote " << filename << "\n";
 }
 #endif
 
