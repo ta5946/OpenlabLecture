@@ -1,12 +1,6 @@
 #ifndef JULIA_H
 #define JULIA_H
 
-#ifdef USE_BOOST_GIL
-#include <boost/gil.hpp>
-#include <boost/gil/extension/io/png.hpp>
-namespace gil = boost::gil;
-#endif
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
@@ -16,7 +10,7 @@ namespace gil = boost::gil;
 #include <vector>
 #include <tuple>
 
-std::tuple<int, int, int> colormapPPM(int c)
+std::tuple<int, int, int> colormap(int c)
 {
     if (!c)
       return {0, 0, 0};
@@ -37,56 +31,13 @@ std::tuple<int, int, int> colormapPPM(int c)
     return {r, g, b};
 }
 
-void writePPM(unsigned char const * pixels, size_t nx, size_t ny, const char * filename)
-{
-  std::ofstream output{filename, std::ios::trunc};
-
-  if (!output) {
-    std::cerr << "Error: cannot open file " << filename << "\n";
-    return;
-  }
-
-  output << "P3\n" << nx << " " << ny << "\n" << 256 << "\n";
-
-
-  for (size_t j = 0; j < ny; ++j) {
-    for (size_t i = 0; i < nx; ++i) {
-      unsigned char col = pixels[i + (ny-j-1)*nx];
-      auto [r, g, b] = colormapPPM(col);
-      output << r << " " << g << " " << b << "\t";
-    }
-    output << "\n";
-  }
-  output << "\n";
-    
-  std::cout << "Wrote " << filename << "\n";
-}
-
-#ifdef USE_BOOST_GIL
-void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * filename) {
-  gil::rgb8_image_t img(nx, ny);
-  auto view = gil::view(img);
-
-  for (size_t j = 0; j < ny; ++j) {
-    for (size_t i = 0; i < nx; ++i) {
-      unsigned char col = pixels[i + (ny-j-1)*nx];
-      auto [r, g, b] = colormapPPM(col);
-      gil::rgb8_pixel_t pix(r, g, b);
-      view(i, j) = pix;
-    }
-  }
-
-  gil::write_view(filename, gil::const_view(img), gil::png_tag{});
-  std::cout << "Wrote " << filename << "\n";
-}
-#else
 void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * filename) {
   std::vector<std::byte> stb_buffer(nx*ny*3);
 
   for (size_t j = 0; j < ny; ++j) {
     for (size_t i = 0; i < nx; ++i) {
       unsigned char col = pixels[i + (ny-j-1)*nx];
-      auto [r, g, b] = colormapPPM(col);
+      auto [r, g, b] = colormap(col);
 
       stb_buffer[3*(i + j*nx)] = static_cast<std::byte>(static_cast<unsigned char>(r));
       stb_buffer[3*(i + j*nx)+1] = static_cast<std::byte>(static_cast<unsigned char>(g));
@@ -98,7 +49,6 @@ void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * f
 
   std::cout << "Wrote " << filename << "\n";
 }
-#endif
 
 template<typename Dims>
 void juliaCPU(const Dims dim,

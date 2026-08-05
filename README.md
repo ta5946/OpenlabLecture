@@ -78,13 +78,11 @@ Try for example:
 - `./julia -0.4 0.6`
 - `./julia 0.285 -0.01`
 
-To display the image, we have two options:
-- The image gets exported as png if boost GIL and libpng are available. The Makefile is not very smart in detecting those, so you might have to improvise a bit.
-- The image can also be exported as PPM, a very simple text-based image format. You can use imagemagick's `display` to view it:
+To display the image, we write is as PNG. Open it with an image viewer such as image magick's `display` or `eog`
 ```
-display julia.ppm
+display julia.png
 ```
-If `display` doesn't work, check that you have an ssh connection with X forwarding (`ssh -X ...`). You can also use `convert` to convert from ppm to something else.
+If you are on a remote connection with ssh and the viewer doesn't work, check that you have an ssh connection with X forwarding (`ssh -X ...`).
 
 ## Bonus tasks
 ### Floating-point precision

@@ -4,10 +4,7 @@
 #include <iostream>
 #include <cstdio>
 
-// This function writes an image to disk in PPM format
-void writePPM(unsigned char const * pixels, size_t nx, size_t ny, const char * filename);
-// This function does the same for PNG, but it requires boost gil and libpng. If these are available,
-// compile with -DUSE_BOOST_GIL. Otherwise, the function will print a warning.
+// This function converts the counts at which the series diverged to colours and writes it as PNG
 void writePNG(unsigned char const * pixels, size_t nx, size_t ny, const char * filename);
 
 // Use this to change the floating-point precision in the kernel
@@ -99,8 +96,6 @@ int main(int argc, char * argv[]) {
     }
   }
 
-  // if libpng is not supported, we can fall back to PPM images
-  //writePPM(pixels, sizeX, sizeY, "julia.ppm");
   // write GPU arrays to disk as PNG image
   writePNG(pixels, sizeX, sizeY, "julia.png");
 
